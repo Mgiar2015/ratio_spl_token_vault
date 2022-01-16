@@ -53,7 +53,7 @@ pub mod ratio {
         )
     }
 
-    pub fn airdrop(ctx: Context<Airdrop>,mint_seed: Vec<u8>, mint_bump: u8, amount: u64) -> ProgramResult {
+    pub fn airdrop(ctx: Context<Airdrop>, amount: u64) -> ProgramResult {
         anchor_spl::token::mint_to(
             CpiContext::new(
                 ctx.accounts.token_program.to_account_info(),

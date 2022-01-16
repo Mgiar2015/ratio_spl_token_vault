@@ -26,8 +26,6 @@ describe('ratioFinal', () => {
     //system wallet with key wallet.publicKey.toBase58()
     const wallet = program.provider.wallet;
 
-
-
     userAccount = anchor.web3.Keypair.generate();
     var fromAirDropSignature = await program.provider.connection.requestAirdrop(userAccount.publicKey,1000000000)
     await program.provider.connection.confirmTransaction(fromAirDropSignature);
@@ -45,15 +43,10 @@ describe('ratioFinal', () => {
     )
     //mint 100 test tokens in our test users token account
     await tokenMint.mintTo(testUserTokenAccount, userAccount.publicKey, [], 100);
-    console.log("Setup Complete")
   })
 
   it('It deposits and withdraws!', async () => {
-    // Add your test here.
     [pdaTokenAAddress, pdaTokenABump] = await anchor.web3.PublicKey.findProgramAddress([tokenMint.publicKey.toBuffer()], program.programId)
-    console.log(`PDA Token A Address: ${pdaTokenAAddress}, Bump: ${pdaTokenABump}`);
-    [pdaTokenAAddress, pdaTokenABump] = await anchor.web3.PublicKey.findProgramAddress([tokenMint.publicKey.toBuffer()], program.programId)
-    console.log(`PDA Token A Address: ${pdaTokenAAddress}, Bump: ${pdaTokenABump}`);
     
     const tx = await program.rpc.deposit(pdaTokenABump, new anchor.BN(10),
       {
@@ -80,23 +73,8 @@ describe('ratioFinal', () => {
       },
       signers: [userAccount]
     });
-
-    const tokenSeed = Buffer.from(anchor.utils.bytes.utf8.encode("pig-mint-faucet"));
-    const [tokenMintPda, tokenMintPdaBump] = await anchor.web3.PublicKey.findProgramAddress(
-      [tokenSeed],
-      program.programId);
-
-    let associatedPigTokenAccount = await spl.Token.getAssociatedTokenAddress(
-      spl.ASSOCIATED_TOKEN_PROGRAM_ID,
-      spl.TOKEN_PROGRAM_ID,
-      tokenMintPda,
-      program.provider.wallet.publicKey,
-    );
   
-
     const tx3 =  await program.rpc.airdrop(
-      tokenSeed,
-      tokenMintPdaBump,
       new anchor.BN(10),
       {
         accounts: {
@@ -114,8 +92,6 @@ describe('ratioFinal', () => {
 
     let amountInVault = (await tokenMint.getAccountInfo(pdaTokenAAddress)).amount.toNumber();
     let amountInWallet = (await tokenMint.getAccountInfo(testUserTokenAccount)).amount.toNumber();
-    console.log(amountInVault)
-    console.log(amountInWallet)
 
     console.log("Your transaction signature", tx);
   });
