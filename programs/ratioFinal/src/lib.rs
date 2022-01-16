@@ -102,7 +102,6 @@ pub struct Withdraw<'info> {
     pub token_program: Program<'info, Token>,
 }
 
-//#[instruction(mint_seed: Vec<u8>,mint_bump: u8, amount: u64)]
 #[derive(Accounts)]
 pub struct Airdrop<'info> {
     #[account(mut)]
