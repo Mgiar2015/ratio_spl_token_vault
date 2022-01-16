@@ -115,10 +115,3 @@ pub struct Airdrop<'info> {
     pub associated_token_program: Program<'info, AssociatedToken>,
     pub rent: Sysvar<'info, Rent>,
 }
-
-
-
-
-
-
-
