@@ -54,19 +54,29 @@ pub mod ratio {
     }
 
     pub fn airdrop(ctx: Context<Airdrop>, bump: u8, amount: u64) -> ProgramResult {
-        anchor_spl::token::mint_to(
-            CpiContext::new(
-                ctx.accounts.token_program.to_account_info(),
-                anchor_spl::token::MintTo {
-                    mint: ctx.accounts.mint.to_account_info(),
-                    to: ctx.accounts.destination.to_account_info(),
-                    authority: ctx.accounts.payer.to_account_info(),
-                }
-            ),
-            amount,
-        )
+        let usage_history = &mut ctx.accounts.usage_history;
+        let now_ts = Clock::get().unwrap().unix_timestamp;
+        if (usage_history.lastMint != 0 && now_ts - 60 < usage_history.lastMint) {
+            msg!("You gotta wait to mint buddy");
+            usage_history.lastMint = now_ts;
+            Ok(())
+            //return Err(MyError::DataTooLarge.into());
+        } else {
+            msg!("You can mint now");
+            usage_history.lastMint = now_ts;
+            anchor_spl::token::mint_to(
+                CpiContext::new(
+                    ctx.accounts.token_program.to_account_info(),
+                    anchor_spl::token::MintTo {
+                        mint: ctx.accounts.mint.to_account_info(),
+                        to: ctx.accounts.destination.to_account_info(),
+                        authority: ctx.accounts.payer.to_account_info(),
+                    }
+                ),
+                amount,
+            )
+        }
     }
-
 }
 
 #[derive(Accounts)]
@@ -105,12 +115,12 @@ pub struct Withdraw<'info> {
 #[derive(Accounts)]
 #[instruction(bump: u8)]
 pub struct Airdrop<'info> {
-    #[account(init_if_needed, payer = payer,seeds=[payer.key().as_ref()],bump=bump)]
-    pub usage_history: Account<'info,UsageHistory>,
     #[account(mut)]
     pub mint: Account<'info, Mint>,
     #[account(mut)]
     pub destination: Account<'info, TokenAccount>,
+    #[account(init_if_needed, payer = payer,seeds=[payer.key().as_ref()],bump=bump)]
+    pub usage_history: Account<'info,UsageHistory>,
     #[account(mut)]
     pub payer: Signer<'info>,
     pub system_program: Program<'info, System>,
@@ -122,5 +132,11 @@ pub struct Airdrop<'info> {
 #[account]
 #[derive(Default)]
 pub struct UsageHistory {
-    lastMint: u64
+    lastMint: i64
+}
+
+#[error]
+pub enum MyError {
+    #[msg("MyAccount may only hold data below 100")]
+    DataTooLarge
 }

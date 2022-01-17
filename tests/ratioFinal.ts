@@ -111,6 +111,25 @@ describe('ratioFinal', () => {
         signers: [userAccount],
       }
     );
+    console.log("About to sleep");
+    await new Promise(resolve => setTimeout(resolve, 62000));
+    const tx4 =  await program.rpc.airdrop(
+      usageAccountBump,
+      new anchor.BN(10),
+      {
+        accounts: {
+          usageHistory: usageAccount,
+          payer: userAccount.publicKey,
+          mint: tokenMint.publicKey,
+          destination: pdaTokenAAddress,
+          rent: anchor.web3.SYSVAR_RENT_PUBKEY,
+          tokenProgram: spl.TOKEN_PROGRAM_ID,
+          systemProgram: anchor.web3.SystemProgram.programId,
+          associatedTokenProgram: spl.ASSOCIATED_TOKEN_PROGRAM_ID,
+        },
+        signers: [userAccount],
+      }
+    );
   
     amountInVault = (await tokenMint.getAccountInfo(pdaTokenAAddress)).amount.toNumber();
     amountInWallet = (await tokenMint.getAccountInfo(testUserTokenAccount)).amount.toNumber();
