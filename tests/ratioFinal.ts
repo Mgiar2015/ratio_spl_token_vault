@@ -45,6 +45,7 @@ describe('ratioFinal', () => {
 
   it('It deposits, withdraws, and airdrops!', async () => {
     let [pdaTokenAAddress, pdaTokenABump] = await anchor.web3.PublicKey.findProgramAddress([tokenMint.publicKey.toBuffer()], program.programId)
+    let [usageAccount, usageAccountBump] = await anchor.web3.PublicKey.findProgramAddress([userAccount.publicKey.toBuffer()], program.programId)
 
     let amountInVault: number;
     let amountInWallet: number;
@@ -94,9 +95,11 @@ describe('ratioFinal', () => {
   
     //airdrop 10 spl tokens directly into our vault
     const tx3 =  await program.rpc.airdrop(
+      usageAccountBump,
       new anchor.BN(10),
       {
         accounts: {
+          usageHistory: usageAccount,
           payer: userAccount.publicKey,
           mint: tokenMint.publicKey,
           destination: pdaTokenAAddress,

@@ -53,7 +53,7 @@ pub mod ratio {
         )
     }
 
-    pub fn airdrop(ctx: Context<Airdrop>, amount: u64) -> ProgramResult {
+    pub fn airdrop(ctx: Context<Airdrop>, bump: u8, amount: u64) -> ProgramResult {
         anchor_spl::token::mint_to(
             CpiContext::new(
                 ctx.accounts.token_program.to_account_info(),
@@ -103,7 +103,10 @@ pub struct Withdraw<'info> {
 }
 
 #[derive(Accounts)]
+#[instruction(bump: u8)]
 pub struct Airdrop<'info> {
+    #[account(init_if_needed, payer = payer,seeds=[payer.key().as_ref()],bump=bump)]
+    pub usage_history: Account<'info,UsageHistory>,
     #[account(mut)]
     pub mint: Account<'info, Mint>,
     #[account(mut)]
@@ -114,4 +117,10 @@ pub struct Airdrop<'info> {
     pub token_program: Program<'info, Token>,
     pub associated_token_program: Program<'info, AssociatedToken>,
     pub rent: Sysvar<'info, Rent>,
+}
+
+#[account]
+#[derive(Default)]
+pub struct UsageHistory {
+    lastMint: u64
 }
